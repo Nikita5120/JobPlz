@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Application Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#efefec;
+    --text:#1a1a18;--text2:#6b6b67;--text3:#9e9e9a;
+    --border:rgba(0,0,0,0.12);--border2:rgba(0,0,0,0.2);
+    --radius:10px;--radius-lg:14px;
+    --b-applied-bg:#E6F1FB;--b-applied-txt:#0C447C;
+    --b-interview-bg:#FAEEDA;--b-interview-txt:#633806;
+    --b-offer-bg:#EAF3DE;--b-offer-txt:#27500A;
+    --b-rejected-bg:#FCEBEB;--b-rejected-txt:#791F1F;
+    --b-saved-bg:#F1EFE8;--b-saved-txt:#444441;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{
+      --bg:#1c1c1a;--bg2:#252523;--bg3:#2e2e2b;
+      --text:#f0efe8;--text2:#a0a09a;--text3:#6b6b67;
+      --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2);
+      --b-applied-bg:#0C447C;--b-applied-txt:#B5D4F4;
+      --b-interview-bg:#633806;--b-interview-txt:#FAC775;
+      --b-offer-bg:#27500A;--b-offer-txt:#C0DD97;
+      --b-rejected-bg:#791F1F;--b-rejected-txt:#F7C1C1;
+      --b-saved-bg:#444441;--b-saved-txt:#D3D1C7;
+    }
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;padding:1rem}
+  .container{max-width:780px;margin:0 auto}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px}
+  h1{font-size:20px;font-weight:500}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.25rem}
+  @media(max-width:480px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:.75rem 1rem}
+  .stat-label{font-size:11px;color:var(--text2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+  .stat-val{font-size:22px;font-weight:500}
+  .filters{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+  .filter-btn{background:var(--bg);border:0.5px solid var(--border);border-radius:20px;padding:5px 13px;font-size:13px;cursor:pointer;color:var(--text2);transition:all .15s}
+  .filter-btn.active{background:var(--bg3);color:var(--text);border-color:var(--border2);font-weight:500}
+  .card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th{text-align:left;font-size:11px;font-weight:500;color:var(--text2);padding:8px 12px;border-bottom:0.5px solid var(--border);letter-spacing:.04em;text-transform:uppercase;background:var(--bg2)}
+  td{padding:11px 12px;border-bottom:0.5px solid var(--border);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--bg2)}
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:500}
+  .b-applied{background:var(--b-applied-bg);color:var(--b-applied-txt)}
+  .b-interview{background:var(--b-interview-bg);color:var(--b-interview-txt)}
+  .b-offer{background:var(--b-offer-bg);color:var(--b-offer-txt)}
+  .b-rejected{background:var(--b-rejected-bg);color:var(--b-rejected-txt)}
+  .b-saved{background:var(--b-saved-bg);color:var(--b-saved-txt)}
+  .add-btn{display:flex;align-items:center;gap:6px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s}
+  .add-btn:hover{opacity:.85}
+  .icon-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:3px 5px;border-radius:6px;font-size:17px;transition:color .15s}
+  .icon-btn:hover{color:var(--text)}
+  .icon-btn.del:hover{color:#E24B4A}
+  .actions{display:flex;gap:2px}
+  /* mobile cards view */
+  .m-card{display:none}
+  @media(max-width:600px){
+    .desktop-table{display:none}
+    .m-card{display:block}
+    .app-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px}
+    .app-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+    .app-card-company{font-weight:500;font-size:15px}
+    .app-card-role{font-size:13px;color:var(--text2);margin-top:2px}
+    .app-card-meta{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+    .app-card-date{font-size:12px;color:var(--text3)}
+    .app-card-notes{font-size:12px;color:var(--text2);margin-top:5px}
+  }
+  /* modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-end;justify-content:center;padding:0}
+  @media(min-width:600px){.modal-overlay{align-items:center;padding:1rem}}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--bg);border-radius:var(--radius-lg) var(--radius-lg) 0 0;width:100%;max-width:440px;padding:1.5rem;max-height:90vh;overflow-y:auto}
+  @media(min-width:600px){.modal{border-radius:var(--radius-lg)}}
+  .modal h2{font-size:16px;font-weight:500;margin-bottom:1.25rem}
+  .form-row{margin-bottom:12px}
+  .form-row label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:500}
+  .form-row input,.form-row select{width:100%;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 12px;font-size:14px;color:var(--text);outline:none;transition:border-color .15s;-webkit-appearance:none}
+  .form-row input:focus,.form-row select:focus{border-color:var(--border2)}
+  .modal-btns{display:flex;gap:8px;margin-top:1.25rem}
+  .btn-cancel{flex:1;background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;font-size:14px;cursor:pointer;color:var(--text2)}
+  .btn-save{flex:2;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);padding:10px;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s}
+  .btn-save:hover{opacity:.85}
+  .empty{text-align:center;padding:3rem 1rem;color:var(--text2)}
+  .empty i{font-size:32px;display:block;margin-bottom:10px;color:var(--text3)}
+  .drag-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1rem;cursor:grab}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Applications</h1>
+    <button class="add-btn" onclick="openModal()"><i class="ti ti-plus"></i> Add</button>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-f="all" onclick="setFilter(this)">All</button>
+    <button class="filter-btn" data-f="saved" onclick="setFilter(this)">Saved</button>
+    <button class="filter-btn" data-f="applied" onclick="setFilter(this)">Applied</button>
+    <button class="filter-btn" data-f="interview" onclick="setFilter(this)">Interview</button>
+    <button class="filter-btn" data-f="offer" onclick="setFilter(this)">Offer</button>
+    <button class="filter-btn" data-f="rejected" onclick="setFilter(this)">Rejected</button>
+  </div>
+
+  <!-- desktop table -->
+  <div class="card desktop-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Notes</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="empty-desk" class="empty" style="display:none"><i class="ti ti-briefcase"></i>No applications here yet.</div>
+  </div>
+
+  <!-- mobile cards -->
+  <div class="m-card" id="m-list"></div>
+  <div id="empty-mob" class="empty" style="display:none"><i class="ti ti-briefcase"></i>No applications here yet.<br><small style="font-size:13px;margin-top:6px;display:block">Tap Add to get started.</small></div>
+</div>
+
+<!-- modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="drag-handle"></div>
+    <h2 id="modal-title">Add application</h2>
+    <div class="form-row"><label>Company</label><input id="f-company" placeholder="e.g. Acme Corp" autocomplete="organization"></div>
+    <div class="form-row"><label>Role</label><input id="f-role" placeholder="e.g. Product Manager" autocomplete="off"></div>
+    <div class="form-row"><label>Status</label>
+      <select id="f-status">
+        <option value="saved">Saved</option>
+        <option value="applied" selected>Applied</option>
+        <option value="interview">Interview</option>
+        <option value="offer">Offer</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Date</label><input type="date" id="f-date"></div>
+    <div class="form-row"><label>Notes</label><input id="f-notes" placeholder="Optional notes"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveApp()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='jat_v2';
+let apps=JSON.parse(localStorage.getItem(KEY)||'null');
+if(!apps){
+  apps=[
+    {id:1,company:'Google',role:'UX Researcher',status:'interview',date:'2026-06-01',notes:'Second round scheduled'},
+    {id:2,company:'Stripe',role:'Product Manager',status:'applied',date:'2026-05-28',notes:''},
+    {id:3,company:'Notion',role:'Growth Analyst',status:'saved',date:'2026-06-05',notes:'Referral from Priya'},
+    {id:4,company:'Figma',role:'Data Analyst',status:'rejected',date:'2026-05-20',notes:''},
+  ];
+}
+let filter='all', editId=null;
+const persist=()=>localStorage.setItem(KEY,JSON.stringify(apps));
+const labels={saved:'Saved',applied:'Applied',interview:'Interview',offer:'Offer',rejected:'Rejected'};
+const cls={saved:'b-saved',applied:'b-applied',interview:'b-interview',offer:'b-offer',rejected:'b-rejected'};
+const esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML};
+const fmt=d=>{if(!d)return'—';const[y,m,dd]=d.split('-');return`${dd}/${m}/${y.slice(2)}`};
+
+function render(){
+  const cnt={all:apps.length,saved:0,applied:0,interview:0,offer:0,rejected:0};
+  apps.forEach(a=>cnt[a.status]=(cnt[a.status]||0)+1);
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-label">Total</div><div class="stat-val">${cnt.all}</div></div>
+    <div class="stat"><div class="stat-label">Applied</div><div class="stat-val">${cnt.applied}</div></div>
+    <div class="stat"><div class="stat-label">Interviews</div><div class="stat-val">${cnt.interview}</div></div>
+    <div class="stat"><div class="stat-label">Offers</div><div class="stat-val">${cnt.offer}</div></div>
+  `;
+  const list=filter==='all'?apps:apps.filter(a=>a.status===filter);
+  // desktop
+  const tbody=document.getElementById('tbody');
+  const emD=document.getElementById('empty-desk');
+  if(!list.length){tbody.innerHTML='';emD.style.display='block'}
+  else{
+    emD.style.display='none';
+    tbody.innerHTML=list.map(a=>`<tr>
+      <td style="font-weight:500">${esc(a.company)}</td>
+      <td>${esc(a.role)}</td>
+      <td><span class="badge ${cls[a.status]}">${labels[a.status]}</span></td>
+      <td style="color:var(--text2);font-size:13px">${fmt(a.date)}</td>
+      <td style="color:var(--text2);font-size:13px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.notes)||'—'}</td>
+      <td><div class="actions">
+        <button class="icon-btn" onclick="editApp(${a.id})" title="Edit"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn del" onclick="delApp(${a.id})" title="Delete"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`).join('');
+  }
+  // mobile cards
+  const mlist=document.getElementById('m-list');
+  const emM=document.getElementById('empty-mob');
+  if(!list.length){mlist.innerHTML='';emM.style.display='block'}
+  else{
+    emM.style.display='none';
+    mlist.innerHTML=list.map(a=>`<div class="app-card">
+      <div class="app-card-top">
+        <div>
+          <div class="app-card-company">${esc(a.company)}</div>
+          <div class="app-card-role">${esc(a.role)}</div>
+        </div>
+        <div class="actions">
+          <button class="icon-btn" onclick="editApp(${a.id})"><i class="ti ti-edit"></i></button>
+          <button class="icon-btn del" onclick="delApp(${a.id})"><i class="ti ti-trash"></i></button>
+        </div>
+      </div>
+      <div class="app-card-meta">
+        <span class="badge ${cls[a.status]}">${labels[a.status]}</span>
+        <span class="app-card-date">${fmt(a.date)}</span>
+      </div>
+      ${a.notes?`<div class="app-card-notes">${esc(a.notes)}</div>`:''}
+    </div>`).join('');
+  }
+}
+
+function setFilter(btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');filter=btn.dataset.f;render();
+}
+
+function openModal(id){
+  editId=id||null;
+  document.getElementById('modal-title').textContent=editId?'Edit application':'Add application';
+  if(editId){
+    const a=apps.find(x=>x.id===editId);
+    document.getElementById('f-company').value=a.company;
+    document.getElementById('f-role').value=a.role;
+    document.getElementById('f-status').value=a.status;
+    document.getElementById('f-date').value=a.date;
+    document.getElementById('f-notes').value=a.notes;
+  }else{
+    ['f-company','f-role','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-status').value='applied';
+    document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  }
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('f-company').focus(),100);
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');editId=null}
+function overlayClick(e){if(e.target===document.getElementById('modal-overlay'))closeModal()}
+
+function saveApp(){
+  const co=document.getElementById('f-company').value.trim();
+  const ro=document.getElementById('f-role').value.trim();
+  if(!co||!ro)return;
+  const obj={id:editId||Date.now(),company:co,role:ro,
+    status:document.getElementById('f-status').value,
+    date:document.getElementById('f-date').value,
+    notes:document.getElementById('f-notes').value.trim()};
+  if(editId){const i=apps.findIndex(a=>a.id===editId);apps[i]=obj}
+  else apps.unshift(obj);
+  persist();closeModal();render();
+}
+function editApp(id){openModal(id)}
+function delApp(id){if(confirm('Remove this application?')){apps=apps.filter(a=>a.id!==id);persist();render()}}
+
+render();
+</script>
+</body>
+</html>
